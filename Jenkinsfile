@@ -67,6 +67,7 @@ pipeline {
                     }
                     TAG = "${version}.${tag_c}"
                     sh "${MVN} versions:set -DnewVersion=${TAG}"
+                    sh "${MVN} deploy"
                 }
             }
         }
@@ -159,18 +160,18 @@ pipeline {
                 branch 'release/*'
             }
 
-            // agent {
-            //     docker {
-            //         // image 'openjdk:8-jre-alpine3.9'
-            //         image 'maven:3.6.3-jdk-8'
-            //         args '--network jenkins_jenkins_network'
-            //     }
-            // }
+            agent {
+                docker {
+                    // image 'openjdk:8-jre-alpine3.9'
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                }
+            }
 
             steps {
                 script {
-                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://localhost:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
-                    def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://localhost:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
+                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/analytics/'", returnStdout: true)
+                    def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/simulator/'", returnStdout: true)
 
                     def jsonSlurper = new groovy.json.JsonSlurper()
                     def parsedAnalytics = jsonSlurper.parseText(analytics)
@@ -183,8 +184,8 @@ pipeline {
                     echo "${jarAnalytics}"
                     echo "${jarSimulator}"
 
-                    sh "curl -u admin:Al12341234 -O 'http://localhost:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${jarAnalytics}'"
-                    sh "curl -u admin:Al12341234 -O 'http://localhost:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${jarSimulator}'"
+                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-release-local/com/lidar/analytics${jarAnalytics}'"
+                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-release-local/com/lidar/simulator${jarSimulator}'"
                     sh "ls"
                     sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
                 }
