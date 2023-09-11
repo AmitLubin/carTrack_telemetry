@@ -63,12 +63,16 @@ pipeline {
             }
 
             steps {
-                if (env.BRANCH_NAME == 'main') {
-                    sh "${MVN} deploy -DskipTests"
-                } else {
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        echo "Skipped!"
+                        sh "${MVN} deploy -DskipTests"
+                    } else {
+                        echo "Tested!"
+                        sh "${MVN} deploy"
+                    }
                     sh "${MVN} deploy"
                 }
-                sh "${MVN} deploy"
                 // stash(name: 'jar', includes: 'target/*.jar')
             }
         }
