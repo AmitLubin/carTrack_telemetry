@@ -20,8 +20,10 @@ pipeline {
 
         stage('Maven-deploy'){
             agent {
-                image 'maven:3.6.3-jdk-8'
-                args '--network jenkins_jenkins_network'
+                docker {
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                }
             }
 
             steps {
