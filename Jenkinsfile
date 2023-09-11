@@ -77,7 +77,7 @@ pipeline {
             }
         }
 
-        stage('Curl-artifactory'){
+        stage('Curl-artifactory-and-E2E'){
             when {
                 anyOf {
                     branch 'main'
@@ -102,6 +102,15 @@ pipeline {
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/simulator-99-20230911.100821-1.jar'"
                 sh "ls -l"
                 sh "java -cp simulator-99-20230911.100821-1.jar:analytics-99-20230911.074016-1.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+            }
+        }
+
+        // stage('Git-tag')
+        stage('try'){
+            steps{
+                script{
+                    sh "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'"
+                }
             }
         }
 
