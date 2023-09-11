@@ -22,6 +22,11 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.lidar</groupId>
+            <artifactId>simulator</artifactId>
+            <version>99-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <distributionManagement>
