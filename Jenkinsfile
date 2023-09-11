@@ -58,7 +58,7 @@ pipeline {
             }
 
             steps {
-
+                sh "${MVN} versions:set 1.0.0"
             }
         }
 
