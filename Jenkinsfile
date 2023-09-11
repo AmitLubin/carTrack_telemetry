@@ -31,7 +31,7 @@ pipeline {
                 stash(name: 'jar', includes: 'target/*.jar')
                 sh "ls"
                 sh "ls target"
-                sh "rm ? \*.jar 99-SNAPSHOT"
+                sh "rm ? '*.jar' 99-SNAPSHOT"
             }
         }
 
