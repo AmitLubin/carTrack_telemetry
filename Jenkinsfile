@@ -11,6 +11,11 @@ pipeline {
 
     environment {
         MVN="mvn -s settings.xml"
+        ARTIFACTORY_URL = 'http://artifactory:8082/artifactory'
+        ARTIFACTORY_USERNAME = 'admin'
+        ARTIFACTORY_PASSWORD = 'Al12341234'
+        ANALYTICS_PATH = 'com/lidar/analytics/99-SNAPSHOT'
+        SIMULATOR_PATH = 'com/lidar/simulator/99-SNAPSHOT'
     }
 
     stages {
