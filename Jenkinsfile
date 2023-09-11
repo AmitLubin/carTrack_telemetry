@@ -44,6 +44,24 @@ pipeline {
             }
         }
 
+        stage('Put-version'){
+            when {
+                branch 'release/*'
+            }
+
+            agent {
+                docker {
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                    reuseNode true
+                }
+            }
+
+            steps {
+
+            }
+        }
+
         stage('Maven-deploy'){
             when {
                 anyOf {
@@ -120,10 +138,10 @@ pipeline {
                     echo "${jarAnalytics}"
                     echo "${jarSimulator}"
 
-                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${jarAnalytics}'"
-                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${jarSimulator}'"
+                    sh "curl -u admin:Al12341234 -O analytics.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${jarAnalytics}'"
+                    sh "curl -u admin:Al12341234 -O simulator.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${jarSimulator}'"
                     sh "ls"
-                    sh "java -cp /app${jarSimulator}:/app${jarAnalytics}:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+                    sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
                 }
             }
         }
