@@ -55,7 +55,7 @@ pipeline {
                     branch 'main'
                     branch 'release/*'
                     expression {
-                        return (env.BRANCH_NAME =~ /^feature\/.*/ && env.E2E == 'True')
+                        return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
                     }
                 }
             }
