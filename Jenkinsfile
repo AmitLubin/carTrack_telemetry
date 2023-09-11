@@ -1,3 +1,5 @@
+def E2E = 'False'
+
 pipeline {
     agent any
 
@@ -15,6 +17,30 @@ pipeline {
             steps {
                 deleteDir()
                 checkout scm
+            }
+        }
+
+        stage('Check-last-commit'){
+            when {
+                branch 'feature/*'
+            }
+
+            agent {
+                docker {
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                }
+            }
+
+            steps {
+                script {
+                    def lastCommitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true)
+                    if (lastCommitMessage.contains("#e2e")) {
+                        E2E = 'True'
+                    } else {
+                        sh "${MVN} package"
+                    }
+                }
             }
         }
 
@@ -44,9 +70,11 @@ pipeline {
             steps {
                 // unstash(name: 'jar')
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar'"
-                
+
             }
         }
+
+
     }
 
     post {
