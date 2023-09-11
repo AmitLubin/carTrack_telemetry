@@ -31,7 +31,6 @@ pipeline {
                 stash(name: 'jar', includes: 'target/*.jar')
                 sh "ls"
                 sh "ls target"
-                sh "rm -rf ?"
             }
         }
 
@@ -46,7 +45,7 @@ pipeline {
 
             steps {
                 // unstash(name: 'jar')
-                sh "curl -u admin:Al12341234 -O 'http://localhost:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar"
+                sh "curl -u admin:Al12341234 -O 'http://localhost:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar'"
                 sh "ls -l"
                 sh "ls target"
             }
