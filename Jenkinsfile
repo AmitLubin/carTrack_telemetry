@@ -208,7 +208,7 @@ pipeline {
                 sh "curl -u admin:Al12341234 -o analytics.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics${JARAN}'"
                 sh "curl -u admin:Al12341234 -o simulator.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator${JARSIM}'"
                 sh "ls -l"
-                sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+                sh "java -cp .${JARSIM}:.${JARAN}:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
             }
         }
 
