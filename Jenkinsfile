@@ -124,36 +124,60 @@ pipeline {
                 }
             }
 
+            // steps {
+            //     // unstash(name: 'jar')
+            //     sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar'"
+            //     sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/simulator-99-20230911.100821-1.jar'"
+            //     sh "ls -l"
+            //     sh "java -cp simulator-99-20230911.100821-1.jar:analytics-99-20230911.074016-1.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+            // }
+
             steps {
-                // unstash(name: 'jar')
-                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar'"
-                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/simulator-99-20230911.100821-1.jar'"
-                sh "ls -l"
-                sh "java -cp simulator-99-20230911.100821-1.jar:analytics-99-20230911.074016-1.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+                script {
+                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+                    def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
+
+                    def jsonSlurper = new groovy.json.JsonSlurper()
+                    def parsedAnalytics = jsonSlurper.parseText(analytics)
+                    def parsedSimulator = jsonSlurper.parseText(simulator)
+
+                    // Extract the JAR file URI
+                    def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
+                    def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
+
+                    echo "${jarAnalytics}"
+                    echo "${jarSimulator}"
+
+                    JARAN = jarAnalytics
+                    JARSIM = jarSimulator
+                }
+            }
+        }
+
+        stage('not-release-test'){
+            when {
+                anyOf {
+                    branch 'main'
+                    expression {
+                        return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
+                    }
+                }
             }
 
-            // steps {
-            //     script {
-            //         def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
-            //         def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
+            agent {
+                docker {
+                    // image 'openjdk:8-jre-alpine3.9'
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                }
+            }
 
-            //         def jsonSlurper = new groovy.json.JsonSlurper()
-            //         def parsedAnalytics = jsonSlurper.parseText(analytics)
-            //         def parsedSimulator = jsonSlurper.parseText(simulator)
-
-            //         // Extract the JAR file URI
-            //         def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
-            //         def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
-
-            //         echo "${jarAnalytics}"
-            //         echo "${jarSimulator}"
-
-            //         sh "curl -u admin:Al12341234 -O http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/${jarAnalytics}"
-            //         sh "curl -u admin:Al12341234 -O 'simulator.jar' 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${jarSimulator}'"
-            //         sh "ls"
-            //         sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
-            //     }
-            // }
+            steps {
+                sh "curl -u admin:Al12341234 -o analytics.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${JARAN}'"
+                sh "curl -u admin:Al12341234 -o simulator.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${JARSIM}'"
+                sh "ls -l"
+                sh "java -cp .${JARSIM}:.${JARAN}:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+            }
         }
 
         stage("Release-artifactory"){
