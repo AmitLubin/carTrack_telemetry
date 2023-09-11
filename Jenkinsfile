@@ -35,12 +35,12 @@ pipeline {
         }
 
         stage('Curl-artifactory'){
-            agent {
-                docker {
-                    image 'openjdk:8-jre-alpine3.9'
-                    args '--network jenkins_jenkins_network'
-                }
-            }
+            // agent {
+            //     docker {
+            //         image 'openjdk:8-jre-alpine3.9'
+            //         args '--network jenkins_jenkins_network'
+            //     }
+            // }
 
             steps {
                 unstash(name: 'jar')
