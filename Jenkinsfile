@@ -35,9 +35,16 @@ pipeline {
         }
 
         stage('Curl-artifactory'){
+            agent {
+                docker {
+                    image 'openjdk:8-jre-alpine3.9'
+                    args '--network jenkins_jenkins_network'
+                }
+            }
+
             steps {
                 unstash(name: 'jar')
-                sh "curl -u admin:Al12341234 -O 'http://localhost:8081/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/*.jar'"
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8081/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/*.jar'"
                 sh "ls"
                 sh "ls target"
             }
