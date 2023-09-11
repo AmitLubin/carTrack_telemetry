@@ -100,7 +100,7 @@ pipeline {
                     }
                     sh "${MVN} deploy"
                 }
-                // stash(name: 'jar', includes: 'target/*.jar')
+                stash(name: 'jar', includes: 'target/*.jar')
             }
         }
 
@@ -159,13 +159,13 @@ pipeline {
                 branch 'release/*'
             }
 
-            agent {
-                docker {
-                    // image 'openjdk:8-jre-alpine3.9'
-                    image 'maven:3.6.3-jdk-8'
-                    args '--network jenkins_jenkins_network'
-                }
-            }
+            // agent {
+            //     docker {
+            //         // image 'openjdk:8-jre-alpine3.9'
+            //         image 'maven:3.6.3-jdk-8'
+            //         args '--network jenkins_jenkins_network'
+            //     }
+            // }
 
             steps {
                 script {
