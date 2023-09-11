@@ -63,8 +63,10 @@ pipeline {
             steps {
                 script {
                     def version = env.BRANCH_NAME.split('/')[1]
+                    echo "${version}"
                     def tag_c = 0
                     sshagent(credentials: ['GitlabSSHprivateKey']){
+                        sh "git ls-remote --tags origin | grep 1.0 | wc -l"
                         tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
                     }
                     TAG = "${version}.${tag_c}"
