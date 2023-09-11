@@ -38,9 +38,11 @@ pipeline {
                     def lastCommitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true)
                     echo "${lastCommitMessage}"
                     if (lastCommitMessage.contains("#e2e")) {
+                        echo "E2E"
                         E2E = 'True'
                     } else {
                         sh "${MVN} package"
+                        echo "Packaged"
                     }
                 }
             }
