@@ -34,7 +34,9 @@ pipeline {
 
             steps {
                 script {
+                    echo "Entered!"
                     def lastCommitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true)
+                    echo "${lastCommitMessage}"
                     if (lastCommitMessage.contains("#e2e")) {
                         E2E = 'True'
                     } else {
@@ -45,6 +47,14 @@ pipeline {
         }
 
         stage('Maven-deploy'){
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'release/*'
+
+                }
+            }
+
             agent {
                 docker {
                     image 'maven:3.6.3-jdk-8'
