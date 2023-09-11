@@ -185,8 +185,9 @@ pipeline {
                     echo "${jarAnalytics}"
                     echo "${jarSimulator}"
 
-                    JARAN = jarAnalytics
-                    JARSIM = jarSimulator
+                    JARAN = "${jarAnalytics}"
+                    JARSIM = "${jarSimulator}"
+                    echo "${JARAN}"
                 }
             }
         }
