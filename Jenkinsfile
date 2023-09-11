@@ -102,7 +102,6 @@ pipeline {
                     }
                     sh "${MVN} deploy"
                 }
-                stash(name: 'jar', includes: 'target/*.jar')
             }
         }
 
@@ -233,12 +232,25 @@ pipeline {
                 sh "curl -u admin:Al12341234 -o simulator.jar 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${JARSIM}'"
                 sh "ls -l"
                 sh "java -cp .${JARSIM}:.${JARAN}:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+                stash(name: 'jar', includes: 'target/*.jar')
             }
         }
 
-        
+        stage('Git-tag'){
+            when {
+                branch 'release/*'
+            }
 
-        
+            steps {
+                unstash(name: 'jar')
+
+                sshagent(credentials: ['GitlabSSHprivateKey']){
+                    sh "git tag v${TAG}"
+                    sh "git push origin v${TAG}"                    
+                }
+            }
+
+        }
 
 
     }
