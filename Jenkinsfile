@@ -30,6 +30,7 @@ pipeline {
                 sh "${MVN} deploy"
                 stash(name: 'jar', includes: 'target/*.jar')
                 sh "ls"
+                sh "ls target"
             }
         }
 
