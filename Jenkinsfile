@@ -110,6 +110,7 @@ pipeline {
             steps{
                 script{
                     def response =  sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+                    echo "${response}"
                 }
             }
         }
