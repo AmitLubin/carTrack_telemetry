@@ -47,6 +47,25 @@ pipeline {
             }
         }
 
+        stage ('Get-version'){
+            when {
+                branch 'release/*'
+            }
+
+            steps {
+                script {
+                    def version = env.BRANCH_NAME.split('/')[1]
+                    echo "${version}"
+                    def tag_c = 0
+                    sshagent(credentials: ['GitlabSSHprivateKey']){
+                        sh "git ls-remote --tags origin | grep 1.0 | wc -l"
+                        tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
+                    }
+                    TAG = "${version}.${tag_c}"
+                }
+            }
+        }
+
         stage('Put-version'){
             when {
                 branch 'release/*'
@@ -61,18 +80,8 @@ pipeline {
             }
 
             steps {
-                script {
-                    def version = env.BRANCH_NAME.split('/')[1]
-                    echo "${version}"
-                    def tag_c = 0
-                    sshagent(credentials: ['GitlabSSHprivateKey']){
-                        sh "git ls-remote --tags origin | grep 1.0 | wc -l"
-                        tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
-                    }
-                    TAG = "${version}.${tag_c}"
-                    sh "${MVN} versions:set -DnewVersion=${TAG}"
-                    sh "${MVN} deploy"
-                }
+                sh "${MVN} versions:set -DnewVersion=${TAG}"
+                sh "${MVN} deploy"
             }
         }
 
