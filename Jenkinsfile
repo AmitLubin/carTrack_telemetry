@@ -187,7 +187,6 @@ pipeline {
 
                     JARAN = jarAnalytics
                     JARSIM = jarSimulator
-                    echo "${JARAN}"
                 }
             }
         }
