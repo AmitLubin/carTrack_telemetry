@@ -63,7 +63,7 @@ pipeline {
                     def version = env.BRANCH_NAME.split('/')[1]
                     def tag_c = 0
                     sshagent(credentials: ['GitlabSSHprivateKey']){
-                        def tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
+                        tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
                     }
                     TAG = "${version}.${tag_c}"
                     sh "${MVN} versions:set -DnewVersion=${TAG}"
