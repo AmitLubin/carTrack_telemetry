@@ -78,7 +78,6 @@ pipeline {
             when {
                 anyOf {
                     branch 'main'
-                    branch 'release/*'
                     expression {
                         return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
                     }
