@@ -44,7 +44,6 @@ pipeline {
                         sh "${MVN} package"
                         echo "Packaged"
                     }
-
                 }
             }
         }
