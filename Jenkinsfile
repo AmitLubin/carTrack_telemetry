@@ -44,7 +44,7 @@ pipeline {
                         sh "${MVN} package"
                         echo "Packaged"
                     }
-                    
+
                 }
             }
         }
@@ -54,7 +54,9 @@ pipeline {
                 anyOf {
                     branch 'main'
                     branch 'release/*'
-
+                    expression {
+                        return (env.BRANCH_NAME == 'feature/*' && env.E2E == 'True')
+                    }
                 }
             }
 
