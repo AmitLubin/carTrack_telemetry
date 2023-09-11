@@ -44,8 +44,8 @@ pipeline {
             }
 
             steps {
-                unstash(name: 'jar')
-                sh "curl -u admin:Al12341234 -O 'http://artifactory:8081/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/*.jar'"
+                // unstash(name: 'jar')
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8081/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT'"
                 sh "ls"
                 sh "ls target"
             }
