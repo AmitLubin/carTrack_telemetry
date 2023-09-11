@@ -113,12 +113,12 @@ pipeline {
                     def parsedAnalytics = jsonSlurper.parseText(analytics)
                     def parsedSimulator = jsonSlurper.parseText(simulator)
 
-                    echo "${jarAnalytics}"
-                    echo "${jarSimulator}"
-
                     // Extract the JAR file URI
                     def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
                     def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
+
+                    echo "${jarAnalytics}"
+                    echo "${jarSimulator}"
 
                     sh """
                         curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${jarAnalytics}'
