@@ -108,7 +108,6 @@ pipeline {
             when {
                 anyOf {
                     branch 'main'
-                    branch 'release/*'
                     expression {
                         return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
                     }
@@ -153,6 +152,28 @@ pipeline {
             //         sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
             //     }
             // }
+        }
+
+        stage("Release-artifactory"){
+            when {
+                branch 'release/*'
+            }
+
+            agent {
+                docker {
+                    // image 'openjdk:8-jre-alpine3.9'
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                }
+            }
+
+            steps {
+                // unstash(name: 'jar')
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar'"
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/simulator-99-20230911.100821-1.jar'"
+                sh "ls -l"
+                sh "java -cp simulator-99-20230911.100821-1.jar:analytics-99-20230911.074016-1.jar:target/telemetry-${TAG}.jar com.lidar.simulation.Simulator"
+            }
         }
 
         
