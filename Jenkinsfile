@@ -11,11 +11,6 @@ pipeline {
 
     environment {
         MVN="mvn -s settings.xml"
-        ARTIFACTORY_URL = 'http://artifactory:8082/artifactory'
-        ARTIFACTORY_USERNAME = 'admin'
-        ARTIFACTORY_PASSWORD = 'Al12341234'
-        ANALYTICS_PATH = 'com/lidar/analytics/99-SNAPSHOT'
-        SIMULATOR_PATH = 'com/lidar/simulator/99-SNAPSHOT'
     }
 
     stages {
@@ -159,44 +154,7 @@ pipeline {
             // }
         }
 
-        // stage("Release-artifactory"){
-        //     when {
-        //         branch 'release/*'
-        //     }
-
-        //     agent {
-        //         docker {
-        //             // image 'openjdk:8-jre-alpine3.9'
-        //             image 'maven:3.6.3-jdk-8'
-        //             args '--network jenkins_jenkins_network'
-        //         }
-        //     }
-
-        //     steps {
-        //         script {
-        //             def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
-        //             def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
-
-        //             def jsonSlurper = new groovy.json.JsonSlurper()
-        //             def parsedAnalytics = jsonSlurper.parseText(analytics)
-        //             def parsedSimulator = jsonSlurper.parseText(simulator)
-
-        //             // Extract the JAR file URI
-        //             def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
-        //             def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
-
-        //             echo "${jarAnalytics}"
-        //             echo "${jarSimulator}"
-
-        //             sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/${jarAnalytics}'"
-        //             sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${jarSimulator}'"
-        //             sh "ls"
-        //             sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
-        //         }
-        //     }
-        // }
-
-        stage('Download JAR Files') {
+        stage("Release-artifactory"){
             when {
                 branch 'release/*'
             }
@@ -208,61 +166,32 @@ pipeline {
                     args '--network jenkins_jenkins_network'
                 }
             }
+
             steps {
                 script {
+                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+                    def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
+
                     def jsonSlurper = new groovy.json.JsonSlurper()
+                    def parsedAnalytics = jsonSlurper.parseText(analytics)
+                    def parsedSimulator = jsonSlurper.parseText(simulator)
 
-                    // Fetch metadata for the 'analytics' artifact
-                    def analyticsMetadata = sh(
-                        script: "curl -u \${ARTIFACTORY_USERNAME}:\${ARTIFACTORY_PASSWORD} -s \${ARTIFACTORY_URL}/api/storage/libs-snapshot-local/\${ANALYTICS_PATH}",
-                        returnStdout: true
-                    )
-                    def parsedAnalytics = jsonSlurper.parseText(analyticsMetadata)
-
-                    // Fetch metadata for the 'simulator' artifact
-                    def simulatorMetadata = sh(
-                        script: "curl -u \${ARTIFACTORY_USERNAME}:\${ARTIFACTORY_PASSWORD} -s \${ARTIFACTORY_URL}/api/storage/libs-snapshot-local/\${SIMULATOR_PATH}",
-                        returnStdout: true
-                    )
-                    def parsedSimulator = jsonSlurper.parseText(simulatorMetadata)
-
-                    // Extract the JAR file URIs
+                    // Extract the JAR file URI
                     def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
                     def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
 
-                    echo "Downloading JAR files..."
-                    
-                    // Download the 'analytics' JAR
-                    sh "curl -u \${ARTIFACTORY_USERNAME}:\${ARTIFACTORY_PASSWORD} -O \${ARTIFACTORY_URL}/libs-snapshot-local/\${ANALYTICS_PATH}/\${jarAnalytics}"
-                    
-                    // Download the 'simulator' JAR
-                    sh "curl -u \${ARTIFACTORY_USERNAME}:\${ARTIFACTORY_PASSWORD} -O \${ARTIFACTORY_URL}/libs-snapshot-local/\${SIMULATOR_PATH}/\${jarSimulator}"
+                    echo "${jarAnalytics}"
+                    echo "${jarSimulator}"
 
-                    echo "JAR files downloaded successfully."
+                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/${jarAnalytics}'"
+                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${jarSimulator}'"
+                    sh "ls"
+                    sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
                 }
             }
         }
 
-        stage('Run Simulator') {
-            when {
-                branch 'release/*'
-            }
-
-            agent {
-                docker {
-                    // image 'openjdk:8-jre-alpine3.9'
-                    image 'maven:3.6.3-jdk-8'
-                    args '--network jenkins_jenkins_network'
-                }
-            }
-            steps {
-                script {
-                    // Assuming the JAR files are in the same directory as your Jenkins workspace
-                    def simulatorCommand = "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
-                    sh simulatorCommand
-                }
-            }
-        }
+        
 
         
 
