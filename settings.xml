@@ -1,4 +1,26 @@
 <settings>
+    <profiles>
+        <profile>
+            <id>test</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <name>artifactory-release</name>
+                    <url>http://artifactory:8081/artifactory/libs-release-local</url>
+                </repository>
+                <repository>
+                    <id>snapshots</id>
+                    <name>artifactory-snapshots</name>
+                    <url>http://artifactory:8081/artifactory/libs-snapshot-local</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+    
+    <activeProfiles>
+        <activeProfile>test</activeProfile>
+    </activeProfiles>
+
     <servers>
         <server>
             <id>central</id>
