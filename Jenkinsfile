@@ -34,16 +34,11 @@ pipeline {
 
             steps {
                 script {
-                    echo "Entered!"
                     def lastCommitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true)
-                    echo "${lastCommitMessage}"
                     if (lastCommitMessage.contains("#e2e")) {
                         E2E = 'True'
-                        echo "${E2E}"
-                        echo "${env.BRANCH_NAME}"
                     } else {
                         sh "${MVN} package"
-                        echo "Packaged"
                     }
                 }
             }
@@ -68,8 +63,13 @@ pipeline {
             }
 
             steps {
+                if (env.BRANCH_NAME == 'main') {
+                    sh "${MVN} deploy -DskipTests"
+                } else {
+                    sh "${MVN} deploy"
+                }
                 sh "${MVN} deploy"
-                stash(name: 'jar', includes: 'target/*.jar')
+                // stash(name: 'jar', includes: 'target/*.jar')
             }
         }
 
