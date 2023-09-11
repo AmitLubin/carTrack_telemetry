@@ -1,5 +1,7 @@
 def E2E = 'False'
 def TAG = "1.0.0"
+def JARAN = ""
+def JARSIM = ""
 
 pipeline {
     agent any
@@ -184,11 +186,30 @@ pipeline {
                     echo "${jarAnalytics}"
                     echo "${jarSimulator}"
 
-                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-release-local/com/lidar/analytics${jarAnalytics}'"
-                    sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-release-local/com/lidar/simulator${jarSimulator}'"
-                    sh "ls"
-                    sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
+                    JARAN = jarAnalytics
+                    JARSIM = jarSimulator
                 }
+            }
+        }
+
+        stage('Test'){
+            when {
+                branch 'release/*'
+            }
+
+            agent {
+                docker {
+                    // image 'openjdk:8-jre-alpine3.9'
+                    image 'maven:3.6.3-jdk-8'
+                    args '--network jenkins_jenkins_network'
+                }
+            }
+
+            steps {
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-release-local/com/lidar/analytics${jarAnalytics}'"
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-release-local/com/lidar/simulator${jarSimulator}'"
+                sh "ls"
+                sh "java -cp simulator.jar:analytics.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
             }
         }
 
