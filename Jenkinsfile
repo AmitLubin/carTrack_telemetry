@@ -62,7 +62,7 @@ pipeline {
                     sshagent(credentials: ['GitlabSSHprivateKey']){
                         sh "git ls-remote --tags origin | grep 1.0 | wc -l"
                         tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
-                        tag_ana = shscript: "git ls-remote --tags git@gitlab.com:amitlubin/exam2_analytics.git | grep ${version} | wc -l", returnStdout: true)
+                        tag_ana = sh(script: "git ls-remote --tags git@gitlab.com:amitlubin/exam2_analytics.git | grep ${version} | wc -l", returnStdout: true)
                     }
                     tag_untrimmed = "${version}.${tag_c}"
                     TAG = tag_untrimmed.trim()
