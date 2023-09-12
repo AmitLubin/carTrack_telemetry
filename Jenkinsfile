@@ -240,7 +240,7 @@ pipeline {
             }
 
             steps {
-                sh "curl -u admin:Al12341234 -O http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/${TAGANA}${JARAN}"
+                sh "curl -u admin:Al12341234 -O http://artifactory:8082/artifactory/libs-release-local/com/lidar/analytics/${TAGANA}${JARAN}"
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${JARSIM}'"
                 sh "ls -l"
                 echo "${JARAN}"
