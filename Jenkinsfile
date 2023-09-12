@@ -124,14 +124,9 @@ pipeline {
             }
         }
 
-        stage('Curl-artifactory-and-E2E'){
+        stage("Get-latest-jars"){
             when {
-                anyOf {
-                    branch 'main'
-                    expression {
-                        return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
-                    }
-                }
+                branch 'release/*'
             }
 
             agent {
@@ -143,7 +138,17 @@ pipeline {
 
             steps {
                 script {
-                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+                    def analytics = ""
+                    if (env.BRANCH_NAME =~ /^release\/.*/){
+                        echo "${TAGANA}"
+                        def url = "http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/analytics/${TAGANA}"
+                        echo "${url}"
+
+                        def analytics = sh(script: "curl -u admin:Al12341234 -X GET ${url}", returnStdout: true)
+                    } else {
+                        analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+                    }
+                    
                     def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
 
                     def jsonSlurper = new groovy.json.JsonSlurper()
@@ -162,6 +167,45 @@ pipeline {
                 }
             }
         }
+
+        // stage('Curl-artifactory-and-E2E'){
+        //     when {
+        //         anyOf {
+        //             branch 'main'
+        //             expression {
+        //                 return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
+        //             }
+        //         }
+        //     }
+
+        //     agent {
+        //         docker {
+        //             image 'maven:3.6.3-jdk-8'
+        //             args '--network jenkins_jenkins_network'
+        //         }
+        //     }
+
+        //     steps {
+        //         script {
+        //             def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+        //             def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
+
+        //             def jsonSlurper = new groovy.json.JsonSlurper()
+        //             def parsedAnalytics = jsonSlurper.parseText(analytics)
+        //             def parsedSimulator = jsonSlurper.parseText(simulator)
+
+        //             // Extract the JAR file URI
+        //             def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
+        //             def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
+
+        //             echo "${jarAnalytics}"
+        //             echo "${jarSimulator}"
+
+        //             JARAN = jarAnalytics
+        //             JARSIM = jarSimulator
+        //         }
+        //     }
+        // }
 
         stage('not-release-test'){
             when {
@@ -187,43 +231,43 @@ pipeline {
             }
         }
 
-        stage("Release-artifactory"){
-            when {
-                branch 'release/*'
-            }
+        // stage("Release-artifactory"){
+        //     when {
+        //         branch 'release/*'
+        //     }
 
-            agent {
-                docker {
-                    image 'maven:3.6.3-jdk-8'
-                    args '--network jenkins_jenkins_network'
-                }
-            }
+        //     agent {
+        //         docker {
+        //             image 'maven:3.6.3-jdk-8'
+        //             args '--network jenkins_jenkins_network'
+        //         }
+        //     }
 
-            steps {
-                script {
-                    echo "${TAGANA}"
-                    def url = "http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/analytics/${TAGANA}"
-                    echo "${url}"
+        //     steps {
+        //         script {
+        //             echo "${TAGANA}"
+        //             def url = "http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/analytics/${TAGANA}"
+        //             echo "${url}"
 
-                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET ${url}", returnStdout: true)
-                    def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
+        //             def analytics = sh(script: "curl -u admin:Al12341234 -X GET ${url}", returnStdout: true)
+        //             def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
 
-                    def jsonSlurper = new groovy.json.JsonSlurper()
-                    def parsedAnalytics = jsonSlurper.parseText(analytics)
-                    def parsedSimulator = jsonSlurper.parseText(simulator)
+        //             def jsonSlurper = new groovy.json.JsonSlurper()
+        //             def parsedAnalytics = jsonSlurper.parseText(analytics)
+        //             def parsedSimulator = jsonSlurper.parseText(simulator)
 
-                    // Extract the JAR file URI
-                    def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
-                    def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
+        //             // Extract the JAR file URI
+        //             def jarAnalytics = parsedAnalytics.children.find { it.uri.endsWith(".jar") }?.uri
+        //             def jarSimulator = parsedSimulator.children.find { it.uri.endsWith(".jar") }?.uri
 
-                    echo "${jarAnalytics}"
-                    echo "${jarSimulator}"
+        //             echo "${jarAnalytics}"
+        //             echo "${jarSimulator}"
 
-                    JARAN = jarAnalytics
-                    JARSIM = jarSimulator
-                }
-            }
-        }
+        //             JARAN = jarAnalytics
+        //             JARSIM = jarSimulator
+        //         }
+        //     }
+        // }
 
         stage('Test'){
             when {
