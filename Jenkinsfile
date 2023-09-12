@@ -1,5 +1,6 @@
 def E2E = 'False'
 def TAG = "1.0.0"
+def TAGANA = "1.0.0"
 def JARAN = ""
 def JARSIM = ""
 
@@ -56,13 +57,19 @@ pipeline {
                 script {
                     def version = env.BRANCH_NAME.split('/')[1]
                     echo "${version}"
-                    def tag_c = 0
+                    def tag_c = "0"
+                    def tag_ana = "0"
                     sshagent(credentials: ['GitlabSSHprivateKey']){
                         sh "git ls-remote --tags origin | grep 1.0 | wc -l"
                         tag_c = sh(script: "git ls-remote --tags origin | grep ${version} | wc -l", returnStdout: true)
+                        tag_ana = shscript: "git ls-remote --tags git@gitlab.com:amitlubin/exam2_analytics.git | grep ${version} | wc -l", returnStdout: true)
                     }
                     tag_untrimmed = "${version}.${tag_c}"
                     TAG = tag_untrimmed.trim()
+                    def new_tag = (tag_ana.toInteger() - 1).toString()
+                    def tag_ana_untrimmed = "${version}.${new_tag}"
+                    TAGANA = tag_ana_untrimmed.trim()
+                    echo "${TAGANA}"
                 }
             }
         }
@@ -76,7 +83,6 @@ pipeline {
                 docker {
                     image 'maven:3.6.3-jdk-8'
                     args '--network jenkins_jenkins_network'
-                    // reuseNode true
                 }
             }
 
@@ -135,14 +141,6 @@ pipeline {
                 }
             }
 
-            // steps {
-            //     // unstash(name: 'jar')
-            //     sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/analytics-99-20230911.074016-1.jar'"
-            //     sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/simulator-99-20230911.100821-1.jar'"
-            //     sh "ls -l"
-            //     sh "java -cp simulator-99-20230911.100821-1.jar:analytics-99-20230911.074016-1.jar:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
-            // }
-
             steps {
                 script {
                     def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
@@ -177,7 +175,6 @@ pipeline {
 
             agent {
                 docker {
-                    // image 'openjdk:8-jre-alpine3.9'
                     image 'maven:3.6.3-jdk-8'
                     args '--network jenkins_jenkins_network'
                 }
@@ -198,7 +195,6 @@ pipeline {
 
             agent {
                 docker {
-                    // image 'openjdk:8-jre-alpine3.9'
                     image 'maven:3.6.3-jdk-8'
                     args '--network jenkins_jenkins_network'
                 }
@@ -206,7 +202,11 @@ pipeline {
 
             steps {
                 script {
-                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
+                    echo "${TAGANA}"
+                    def url = "http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/analytics/${TAGANA}"
+                    echo "${url}"
+
+                    def analytics = sh(script: "curl -u admin:Al12341234 -X GET ${url}", returnStdout: true)
                     def simulator = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT/'", returnStdout: true)
 
                     def jsonSlurper = new groovy.json.JsonSlurper()
@@ -240,7 +240,7 @@ pipeline {
             }
 
             steps {
-                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${JARAN}'"
+                sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/${TAGANA}${JARAN}'"
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${JARSIM}'"
                 sh "ls -l"
                 sh "java -cp .${JARSIM}:.${JARAN}:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
