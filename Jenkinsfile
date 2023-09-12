@@ -66,6 +66,8 @@ pipeline {
                     }
                     tag_untrimmed = "${version}.${tag_c}"
                     TAG = tag_untrimmed.trim()
+                    echo "${TAG}"
+
                     def new_tag = (tag_ana.toInteger() - 1).toString()
                     def tag_ana_untrimmed = "${version}.${new_tag}"
                     TAGANA = tag_ana_untrimmed.trim()
@@ -134,7 +136,6 @@ pipeline {
 
             agent {
                 docker {
-                    // image 'openjdk:8-jre-alpine3.9'
                     image 'maven:3.6.3-jdk-8'
                     args '--network jenkins_jenkins_network'
                 }
@@ -182,7 +183,6 @@ pipeline {
             steps {
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT${JARAN}'"
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${JARSIM}'"
-                sh "ls -l"
                 sh "java -cp .${JARSIM}:.${JARAN}:target/telemetry-99-SNAPSHOT.jar com.lidar.simulation.Simulator"
             }
         }
@@ -232,7 +232,6 @@ pipeline {
 
             agent {
                 docker {
-                    // image 'openjdk:8-jre-alpine3.9'
                     image 'maven:3.6.3-jdk-8'
                     args '--network jenkins_jenkins_network'
                 }
@@ -241,9 +240,6 @@ pipeline {
             steps {
                 sh "curl -u admin:Al12341234 -O http://artifactory:8082/artifactory/libs-release-local/com/lidar/analytics/${TAGANA}${JARAN}"
                 sh "curl -u admin:Al12341234 -O 'http://artifactory:8082/artifactory/libs-snapshot-local/com/lidar/simulator/99-SNAPSHOT${JARSIM}'"
-                sh "ls -l"
-                echo "${JARAN}"
-                sh "ls target"
                 sh "java -cp .${JARSIM}:.${JARAN}:target/telemetry-${TAG}.jar com.lidar.simulation.Simulator"
                 stash(name: 'jar', includes: 'target/*.jar')
 
