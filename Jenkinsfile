@@ -126,7 +126,13 @@ pipeline {
 
         stage("Get-latest-jars"){
             when {
-                branch 'release/*'
+                anyOf {
+                    branch 'release/*'
+                    branch 'main'
+                    expression {
+                        return (env.BRANCH_NAME =~ /^feature\/.*/ && E2E == 'True')
+                    }
+                }
             }
 
             agent {
@@ -144,7 +150,7 @@ pipeline {
                         def url = "http://artifactory:8082/artifactory/api/storage/libs-release-local/com/lidar/analytics/${TAGANA}"
                         echo "${url}"
 
-                        def analytics = sh(script: "curl -u admin:Al12341234 -X GET ${url}", returnStdout: true)
+                        analytics = sh(script: "curl -u admin:Al12341234 -X GET ${url}", returnStdout: true)
                     } else {
                         analytics = sh(script: "curl -u admin:Al12341234 -X GET 'http://artifactory:8082/artifactory/api/storage/libs-snapshot-local/com/lidar/analytics/99-SNAPSHOT/'", returnStdout: true)
                     }
